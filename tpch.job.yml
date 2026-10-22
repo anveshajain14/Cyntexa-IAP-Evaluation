@@ -1,0 +1,54 @@
+resources:
+  jobs:
+    TPC_H_daily_pipeline:
+      name: TPC-H daily pipeline
+      tasks:
+        - task_key: Bronze
+          notebook_task:
+            notebook_path: /Workspace/Users/anveshajain@cyntexa.com/Cyntexa-IAP-Evaluation/01_bronze_ingestion
+            source: WORKSPACE
+          max_retries: 1
+          min_retry_interval_millis: 0
+          disable_auto_optimization: true
+        - task_key: Silver
+          depends_on:
+            - task_key: Bronze
+          notebook_task:
+            notebook_path: /Workspace/Users/anveshajain@cyntexa.com/Cyntexa-IAP-Evaluation/02_silver_transformation
+            source: WORKSPACE
+          max_retries: 1
+          min_retry_interval_millis: 0
+          disable_auto_optimization: true
+        - task_key: Silver-lineitem
+          depends_on:
+            - task_key: Silver
+          notebook_task:
+            notebook_path: /Workspace/Users/anveshajain@cyntexa.com/Cyntexa-IAP-Evaluation/02_silver_lineitem
+            source: WORKSPACE
+          max_retries: 1
+          min_retry_interval_millis: 0
+          disable_auto_optimization: true
+        - task_key: Data-quality
+          depends_on:
+            - task_key: Gold
+          notebook_task:
+            notebook_path: /Workspace/Users/anveshajain@cyntexa.com/Cyntexa-IAP-Evaluation/04_data_quality
+            source: WORKSPACE
+          max_retries: 1
+          min_retry_interval_millis: 0
+          disable_auto_optimization: true
+        - task_key: Gold
+          depends_on:
+            - task_key: Silver-lineitem
+          notebook_task:
+            notebook_path: /Workspace/Users/anveshajain@cyntexa.com/Cyntexa-IAP-Evaluation/03_gold
+            source: WORKSPACE
+          max_retries: 1
+          min_retry_interval_millis: 0
+          disable_auto_optimization: true
+      queue:
+        enabled: true
+      parameters:
+        - name: catalog
+          default: dev_l2
+      performance_target: PERFORMANCE_OPTIMIZED
